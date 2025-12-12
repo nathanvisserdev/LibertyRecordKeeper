@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to capture photos and videos for forensic record keeping purposes.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs microphone access to record audio and video with sound for forensic evidence.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library to catalog screenshots and media for forensic records.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app needs permission to save captured media to your photo library.</string>
+	<key>NSScreenCaptureDescription</key>
+	<string>This app needs screen recording permission to capture screen recordings for forensic evidence.</string>
+	<key>NSSystemAdministrationUsageDescription</key>
+	<string>This app requires system administration access for monitoring and capturing forensic evidence.</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>This app uses Face ID to securely authenticate and protect your forensic records.</string>
+</dict>
+</plist>
