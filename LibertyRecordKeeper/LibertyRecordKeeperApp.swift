@@ -84,9 +84,37 @@ struct AuthenticationView: View {
                 await MainActor.run {
                     isAuthenticated = true
                 }
+            } catch let error as DatabaseError {
+                await MainActor.run {
+                    switch error {
+                    case .openFailed:
+                        errorMessage = "Failed to open database. Please check app permissions."
+                    case .prepareFailed:
+                        errorMessage = "Database initialization failed. Please restart the app."
+                    case .executeFailed:
+                        errorMessage = "Database setup failed. Please restart the app."
+                    default:
+                        errorMessage = "Database error: \(error)"
+                    }
+                    showError = true
+                }
+            } catch let error as BiometricAuthError {
+                await MainActor.run {
+                    switch error {
+                    case .authenticationFailed:
+                        errorMessage = "Biometric authentication failed. Please try again."
+                    case .biometricsNotAvailable:
+                        errorMessage = "Biometric authentication is not available on this device."
+                    case .keyGenerationFailed:
+                        errorMessage = "Failed to generate encryption key."
+                    case .keyRetrievalFailed:
+                        errorMessage = "Failed to retrieve encryption key."
+                    }
+                    showError = true
+                }
             } catch {
                 await MainActor.run {
-                    errorMessage = error.localizedDescription
+                    errorMessage = "Authentication error: \(error.localizedDescription)"
                     showError = true
                 }
             }

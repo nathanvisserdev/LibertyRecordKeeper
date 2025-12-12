@@ -55,11 +55,13 @@ class BiometricAuthService {
     
     private func getOrCreateEncryptionKey() async throws -> SymmetricKey {
         // Try to retrieve existing key from keychain
+        // Potential error: Key retrieval from keychain failed
         if let existingKey = try? keychain.retrieveEncryptionKey() {
             return existingKey
         }
         
         // Generate new key if none exists
+        // Potential error: Key generation or storage in keychain failed
         let newKey = SymmetricKey(size: .bits256)
         try keychain.storeEncryptionKey(newKey)
         

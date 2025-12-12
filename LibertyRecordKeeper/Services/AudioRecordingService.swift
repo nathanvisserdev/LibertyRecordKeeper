@@ -7,6 +7,7 @@
 
 import Foundation
 import AVFoundation
+import Combine
 
 enum AudioRecordingError: Error {
     case notAuthorized
@@ -29,6 +30,20 @@ class AudioRecordingService: NSObject, ObservableObject {
     }
     
     func checkAuthorization() async -> Bool {
+        #if os(macOS)
+        // On macOS, use AVCaptureDevice for microphone authorization
+        let status = AVCaptureDevice.authorizationStatus(for: .audio)
+        
+        switch status {
+        case .authorized:
+            return true
+        case .notDetermined:
+            return await AVCaptureDevice.requestAccess(for: .audio)
+        default:
+            return false
+        }
+        #else
+        // iOS uses AVAudioSession
         let status = AVAudioSession.sharedInstance().recordPermission
         
         switch status {
@@ -39,6 +54,7 @@ class AudioRecordingService: NSObject, ObservableObject {
         default:
             return false
         }
+        #endif
     }
     
     func startRecording() async throws {
@@ -46,10 +62,12 @@ class AudioRecordingService: NSObject, ObservableObject {
             throw AudioRecordingError.notAuthorized
         }
         
-        // Setup audio session
+        #if os(iOS)
+        // Setup audio session (iOS only)
         let audioSession = AVAudioSession.sharedInstance()
         try audioSession.setCategory(.record, mode: .default)
         try audioSession.setActive(true)
+        #endif
         
         // Create output file
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -91,26 +109,33 @@ class AudioRecordingService: NSObject, ObservableObject {
         
         recorder.stop()
         
-        guard let audioURL = recorder.url,
-              let startTime = startTime else {
+        let audioURL = recorder.url
+        
+        guard let startTime = startTime else {
             throw AudioRecordingError.recordingFailed
         }
         
         let duration = Date().timeIntervalSince(startTime)
         
         // Get audio properties
-        let asset = AVAsset(url: audioURL)
-        let tracks = asset.tracks(withMediaType: .audio)
+        let asset = AVURLAsset(url: audioURL)
+        let sampleRate: Double
+        let format = "AAC"
         
-        var sampleRate = 44100.0
-        var format = "AAC"
-        
-        if let audioTrack = tracks.first {
-            if let formatDescription = audioTrack.formatDescriptions.first as? CMFormatDescription {
+        // Use modern async API to load tracks
+        if let audioTrack = try? await asset.loadTracks(withMediaType: .audio).first {
+            if let formatDescriptions = try? await audioTrack.load(.formatDescriptions),
+               let formatDescription = formatDescriptions.first {
                 if let streamBasicDescription = CMAudioFormatDescriptionGetStreamBasicDescription(formatDescription) {
                     sampleRate = streamBasicDescription.pointee.mSampleRate
+                } else {
+                    sampleRate = 44100.0
                 }
+            } else {
+                sampleRate = 44100.0
             }
+        } else {
+            sampleRate = 44100.0
         }
         
         let record = AudioRecord(
@@ -126,8 +151,10 @@ class AudioRecordingService: NSObject, ObservableObject {
             recordingDuration = 0
         }
         
-        // Deactivate audio session
+        #if os(iOS)
+        // Deactivate audio session (iOS only)
         try? AVAudioSession.sharedInstance().setActive(false)
+        #endif
         
         return record
     }

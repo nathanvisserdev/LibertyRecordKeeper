@@ -6,7 +6,8 @@
 //
 
 import Foundation
-import AVFoundation
+@preconcurrency import AVFoundation
+import Combine
 #if os(iOS)
 import UIKit
 #elseif os(macOS)
@@ -97,8 +98,8 @@ class CameraService: NSObject, ObservableObject {
         
         captureSession = session
         
-        DispatchQueue.global(qos: .userInitiated).async {
-            session.startRunning()
+        DispatchQueue.global(qos: .userInitiated).async { [weak session] in
+            session?.startRunning()
         }
         
         await MainActor.run {
@@ -167,33 +168,43 @@ extension CameraService: AVCaptureFileOutputRecordingDelegate {
             return
         }
         
-        // Get video properties
-        let asset = AVAsset(url: outputFileURL)
-        let duration = asset.duration.seconds
-        let tracks = asset.tracks(withMediaType: .video)
-        
-        var resolution = "Unknown"
-        var codec = "H.264"
-        
-        if let videoTrack = tracks.first {
-            let size = videoTrack.naturalSize
-            resolution = "\(Int(size.width))x\(Int(size.height))"
+        // Get video properties using modern async APIs
+        Task {
+            let asset = AVURLAsset(url: outputFileURL)
             
-            if let formatDescription = videoTrack.formatDescriptions.first as? CMFormatDescription {
-                let codecType = CMFormatDescriptionGetMediaSubType(formatDescription)
-                codec = fourCCToString(codecType)
+            guard let duration = try? await asset.load(.duration) else {
+                self.videoCompletionHandler?(.failure(CameraError.captureFailed))
+                self.videoCompletionHandler = nil
+                return
             }
+            
+            let tracks = (try? await asset.loadTracks(withMediaType: .video)) ?? []
+            
+            var resolution = "Unknown"
+            var codec = "H.264"
+            
+            if let videoTrack = tracks.first {
+                if let size = try? await videoTrack.load(.naturalSize) {
+                    resolution = "\(Int(size.width))x\(Int(size.height))"
+                }
+                
+                if let formatDescriptions = try? await videoTrack.load(.formatDescriptions),
+                   let formatDescription = formatDescriptions.first {
+                    let codecType = CMFormatDescriptionGetMediaSubType(formatDescription)
+                    codec = self.fourCCToString(codecType)
+                }
+            }
+            
+            let record = VideoRecord(
+                fileURL: outputFileURL,
+                duration: duration.seconds,
+                resolution: resolution,
+                codec: codec
+            )
+            
+            self.videoCompletionHandler?(.success(record))
+            self.videoCompletionHandler = nil
         }
-        
-        let record = VideoRecord(
-            fileURL: outputFileURL,
-            duration: duration,
-            resolution: resolution,
-            codec: codec
-        )
-        
-        videoCompletionHandler?(.success(record))
-        videoCompletionHandler = nil
     }
     
     private func fourCCToString(_ fourCC: FourCharCode) -> String {

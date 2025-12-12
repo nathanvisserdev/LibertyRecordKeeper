@@ -37,19 +37,48 @@ class DatabaseService {
     func initializeDatabase(with key: SymmetricKey) throws {
         self.encryptionKey = key
         
-        // Open database with encryption pragma
-        if sqlite3_open(databaseURL.path, &db) != SQLITE_OK {
+        // Close any existing connection first
+        if db != nil {
+            sqlite3_close(db)
+            db = nil
+        }
+        
+        // Ensure the documents directory exists
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        try? FileManager.default.createDirectory(at: documentsPath, withIntermediateDirectories: true)
+        
+        print("Initializing database at URL: \(databaseURL)")
+        
+        // Check if the database file exists
+        if !FileManager.default.fileExists(atPath: databaseURL.path) {
+            print("Database file does not exist. Creating a new database file.")
+            FileManager.default.createFile(atPath: databaseURL.path, contents: nil, attributes: nil)
+        } else {
+            print("Database file already exists.")
+        }
+
+        // Proceed with opening the database
+        let result = sqlite3_open(databaseURL.path, &db)
+        guard result == SQLITE_OK else {
+            let errorMessage = String(cString: sqlite3_errmsg(db))
+            print("Database open failed: \(errorMessage)")
             throw DatabaseError.openFailed
         }
         
+        print("Database opened successfully.")
+        
         // Enable Write-Ahead Logging for better concurrency
+        print("Enabling Write-Ahead Logging...")
         try execute("PRAGMA journal_mode=WAL;")
         
         // Enable foreign keys
+        print("Enabling foreign keys...")
         try execute("PRAGMA foreign_keys=ON;")
         
         // Create tables if they don't exist
+        print("Creating tables...")
         try createTables()
+        print("Database initialization complete.")
     }
     
     func closeDatabase() {
@@ -175,19 +204,42 @@ class DatabaseService {
     }
     
     private func execute(_ sql: String) throws {
-        var statement: OpaquePointer?
-        
-        guard sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK else {
+        guard db != nil else {
+            print("Database pointer is nil when trying to execute SQL")
             throw DatabaseError.prepareFailed
         }
         
-        defer {
-            sqlite3_finalize(statement)
+        var statement: OpaquePointer?
+        
+        // Potential error: SQL prepare statement failed
+        print("Preparing SQL statement: \(sql)")
+        let prepareResult = sqlite3_prepare_v2(db, sql, -1, &statement, nil)
+        guard prepareResult == SQLITE_OK else {
+            let errorMessage = String(cString: sqlite3_errmsg(db))
+            print("SQL prepare failed: \(errorMessage)")
+            print("SQL: \(sql)")
+            throw DatabaseError.prepareFailed
         }
         
-        guard sqlite3_step(statement) == SQLITE_DONE else {
+        print("SQL statement prepared successfully.")
+        
+        var stepResult: Int32
+        repeat {
+            stepResult = sqlite3_step(statement)
+            if stepResult == SQLITE_ROW {
+                // Consume the row (if needed, log or process the data here)
+                print("SQL returned a row, ignoring as it's not needed.")
+            }
+        } while stepResult == SQLITE_ROW
+        
+        guard stepResult == SQLITE_DONE else {
+            let errorMessage = String(cString: sqlite3_errmsg(db))
+            print("SQL execution failed: \(errorMessage)")
+            print("SQL: \(sql)")
             throw DatabaseError.executeFailed
         }
+        
+        print("SQL executed successfully: \(sql)")
     }
     
     // MARK: - Encryption Helpers
@@ -262,9 +314,9 @@ class DatabaseService {
         
         while sqlite3_step(statement) == SQLITE_ROW {
             // Extract all fields - this is simplified, full implementation would parse all fields
-            let id = UUID(uuidString: String(cString: sqlite3_column_text(statement, 0))) ?? UUID()
-            let createdAt = Date(timeIntervalSince1970: sqlite3_column_double(statement, 1))
-            let modifiedAt = Date(timeIntervalSince1970: sqlite3_column_double(statement, 2))
+            _ = UUID(uuidString: String(cString: sqlite3_column_text(statement, 0))) ?? UUID()
+            _ = Date(timeIntervalSince1970: sqlite3_column_double(statement, 1))
+            _ = Date(timeIntervalSince1970: sqlite3_column_double(statement, 2))
             // ... parse remaining fields
             
             // For brevity, creating a minimal record - full implementation would restore all properties

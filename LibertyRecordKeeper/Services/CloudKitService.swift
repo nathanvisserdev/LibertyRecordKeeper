@@ -20,16 +20,19 @@ class CloudKitService {
     
     private let container: CKContainer
     private let privateDatabase: CKDatabase
-    
     private init() {
-        container = CKContainer.default()
+        let containerIdentifier = "iCloud.com.Liberty.LibertyRecordKeeper"
+        print("Initializing CloudKit container with identifier: \(containerIdentifier)")
+        container = CKContainer(identifier: containerIdentifier)
         privateDatabase = container.privateCloudDatabase
     }
     
     // MARK: - Account Status
     
     func checkAccountStatus() async throws -> Bool {
+        print("Checking iCloud account status...")
         let status = try await container.accountStatus()
+        print("iCloud account status: \(status)")
         return status == .available
     }
     

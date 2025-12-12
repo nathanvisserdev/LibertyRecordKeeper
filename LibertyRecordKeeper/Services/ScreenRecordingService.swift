@@ -8,6 +8,7 @@
 import Foundation
 import ReplayKit
 import AVFoundation
+import Combine
 
 #if os(iOS)
 import UIKit
@@ -170,32 +171,35 @@ class ScreenRecordingService: NSObject, ObservableObject {
                     
                     let duration = Date().timeIntervalSince(startTime)
                     
-                    // Get video properties
-                    let asset = AVAsset(url: outputURL)
-                    let tracks = asset.tracks(withMediaType: .video)
-                    
-                    var resolution = "Unknown"
-                    var frameRate = 0.0
-                    
-                    if let videoTrack = tracks.first {
-                        let size = videoTrack.naturalSize
-                        resolution = "\(Int(size.width))x\(Int(size.height))"
-                        frameRate = Double(videoTrack.nominalFrameRate)
-                    }
-                    
-                    let record = ScreenRecordingRecord(
-                        fileURL: outputURL,
-                        duration: duration,
-                        resolution: resolution,
-                        frameRate: frameRate
-                    )
-                    
-                    DispatchQueue.main.async {
+                    // Get video properties using modern async APIs
+                    Task { @MainActor in
+                        let asset = AVURLAsset(url: outputURL)
+                        let tracks = (try? await asset.loadTracks(withMediaType: .video)) ?? []
+                        
+                        var resolution = "Unknown"
+                        var frameRate = 0.0
+                        
+                        if let videoTrack = tracks.first {
+                            if let size = try? await videoTrack.load(.naturalSize) {
+                                resolution = "\(Int(size.width))x\(Int(size.height))"
+                            }
+                            if let rate = try? await videoTrack.load(.nominalFrameRate) {
+                                frameRate = Double(rate)
+                            }
+                        }
+                        
+                        let record = ScreenRecordingRecord(
+                            fileURL: outputURL,
+                            duration: duration,
+                            resolution: resolution,
+                            frameRate: frameRate
+                        )
+                        
                         self.isRecording = false
                         self.recordingDuration = 0
+                        
+                        continuation.resume(returning: record)
                     }
-                    
-                    continuation.resume(returning: record)
                 }
             }
         }

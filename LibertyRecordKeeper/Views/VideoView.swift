@@ -32,45 +32,34 @@ struct VideoView: View {
                 
                 // Camera Controls
                 HStack(spacing: 20) {
-                    if !viewModel.isCameraReady {
-                        Button("Setup Camera") {
-                            viewModel.setupCamera()
-                        }
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                    } else if viewModel.isRecording {
-                        Button(action: {
+                    Button(action: {
+                        if viewModel.isRecording {
                             viewModel.stopVideoRecording()
-                        }) {
-                            HStack {
-                                Image(systemName: "stop.circle.fill")
-                                Text("Stop Recording")
-                            }
-                            .foregroundColor(.red)
-                            .padding()
-                            .background(Color.red.opacity(0.2))
-                            .cornerRadius(10)
-                        }
-                    } else {
-                        Button(action: {
+                        } else {
                             viewModel.startVideoRecording()
-                        }) {
-                            HStack {
-                                Image(systemName: "video.circle")
-                                Text("Record Video")
-                            }
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.blue)
-                            .cornerRadius(10)
                         }
+                    }) {
+                        HStack {
+                            Image(systemName: viewModel.isRecording ? "stop.circle.fill" : "video.circle")
+                            Text(viewModel.isRecording ? "Stop Recording" : "Record Video")
+                        }
+                        .foregroundColor(viewModel.isRecording ? .red : .white)
+                        .padding()
+                        .background(viewModel.isRecording ? Color.red.opacity(0.2) : Color.blue)
+                        .cornerRadius(10)
                     }
                 }
                 .padding()
             }
             .navigationTitle("Videos")
+            .onAppear {
+                Task {
+                    let hasPermission = await viewModel.checkAndRequestPermissions()
+                    if !hasPermission {
+                        viewModel.errorMessage = "Camera permissions are required to use this feature."
+                    }
+                }
+            }
             .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
                 Button("OK") {
                     viewModel.errorMessage = nil
