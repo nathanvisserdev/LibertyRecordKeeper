@@ -29,6 +29,8 @@ class DatabaseService {
         return URL(fileURLWithPath: "/Users/nathanvisser/Library/Containers/Liberty.LibertyRecordKeeper/Data/Documents/forensic_records.db")
     }
     
+    private var forensic_records_db_sha_sum = "12341bc3cce1b3725cc5386e9028544ef2dd8c92a8c096c9eef1e45c6b0074fa"
+    
     private init() {}
     
     // MARK: - Database Lifecycle
