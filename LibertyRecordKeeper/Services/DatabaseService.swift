@@ -26,8 +26,7 @@ class DatabaseService {
     private let databaseFileName = "forensic_records.db"
     
     private var databaseURL: URL {
-        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        return documentsPath.appendingPathComponent(databaseFileName)
+        return URL(fileURLWithPath: "/Users/nathanvisser/Library/Containers/Liberty.LibertyRecordKeeper/Data/Documents/forensic_records.db")
     }
     
     private init() {}
