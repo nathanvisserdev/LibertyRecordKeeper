@@ -12,29 +12,29 @@ struct ContentView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            ScreenRecordingView()
-                .tabItem {
-                    Label("Screen Recordings", systemImage: "record.circle")
-                }
-                .tag(0)
-            
             VideoView()
                 .tabItem {
                     Label("Videos", systemImage: "video")
                 }
                 .tag(1)
             
-            PhotoView()
-                .tabItem {
-                    Label("Photos", systemImage: "photo")
-                }
-                .tag(2)
-            
             AudioView()
                 .tabItem {
                     Label("Audio", systemImage: "waveform")
                 }
                 .tag(3)
+            
+            ScreenRecordingView()
+                .tabItem {
+                    Label("Screen Recordings", systemImage: "record.circle")
+                }
+                .tag(0)
+            
+            PhotoView()
+                .tabItem {
+                    Label("Photos", systemImage: "photo")
+                }
+                .tag(2)
             
             ScreenshotView()
                 .tabItem {
