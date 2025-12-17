@@ -10,7 +10,7 @@ import Combine
 
 @MainActor
 class VideoViewModel: ObservableObject {
-    @Published var videos: [VideoRecord] = []
+    @Published var videos: [VideoModel] = []
     @Published var isRecording = false
     @Published var errorMessage: String?
     @Published var isLoading = false
@@ -42,7 +42,7 @@ class VideoViewModel: ObservableObject {
         isLoading = true
         Task {
             do {
-                let records = try databaseService.fetchAllVideos()
+                let records = try GetAllVideosService.fetchAllVideos(from: "/Users/nathanvisser/Library/Containers/Liberty.LibertyRecordKeeper/Data/Documents/Videos")
                 await MainActor.run {
                     self.videos = records
                     self.isLoading = false
@@ -81,7 +81,15 @@ class VideoViewModel: ObservableObject {
                                 // Upload to CloudKit
                                 try await self?.cloudKitService.uploadVideo(record)
                                 
-                                self?.videos.insert(record, at: 0)
+                                let videoModel = VideoModel(
+                                    id: record.id,
+                                    createdAt: record.createdAt,
+                                    fileURL: record.fileURL!,
+                                    fileSize: record.fileSize,
+                                    resolution: record.resolution,
+                                    duration: record.duration
+                                )
+                                self?.videos.insert(videoModel, at: 0)
                             } catch {
                                 self?.errorMessage = "Failed to save video: \(error.localizedDescription)"
                             }

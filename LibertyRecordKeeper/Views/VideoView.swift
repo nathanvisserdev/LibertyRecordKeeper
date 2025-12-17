@@ -18,12 +18,14 @@ struct VideoView: View {
                 if viewModel.isLoading {
                     ProgressView("Loading videos...")
                 } else {
-                    List {
-                        ForEach(viewModel.videos) { video in
-                            VideoRow(video: video)
-                                .onTapGesture {
-                                    selectedVideo = video
-                                }
+                    List(viewModel.videos) { video in
+                        VStack(alignment: .leading) {
+                            Text(video.fileURL.lastPathComponent)
+                                .font(.headline)
+                            Text("Size: \(video.fileSize) bytes")
+                                .font(.subheadline)
+                            Text("Created: \(video.createdAt)")
+                                .font(.subheadline)
                         }
                     }
                 }
