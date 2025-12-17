@@ -9,23 +9,43 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var selectedVideo: VideoRecord? // State for selected video
+    @State private var selectedView: ViewType = .surveillance // Default view
 
     var body: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 0) {
-                // Left side: Video list
-                CommandCenterView(selectedVideo: $selectedVideo) // Pass binding to CommandCenterView
-                    .frame(width: geometry.size.width * 0.3) // 30% of the width
-                    .background(Color.gray.opacity(0.2))
+        VStack {
+            // Menu for selecting views
+            Menu("View > Orientation") {
+                Button("Surveillance View") { selectedView = .surveillance }
+                Button("Split Screen View") { selectedView = .splitScreen }
+                Button("Quadruplex View") { selectedView = .quadruplex }
+                Button("Multiplex View") { selectedView = .multiplex }
+            }
+            .padding()
 
-                // Right side: Media player
-                MediaPlayer(video: selectedVideo) // Pass selected video to MediaPlayer
-                    .frame(width: geometry.size.width * 0.7) // 70% of the width
-                    .background(Color.black)
+            // Display the selected view
+            GeometryReader { geometry in
+                switch selectedView {
+                case .surveillance:
+                    SurveillanceView()
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                case .splitScreen:
+                    SplitScreenView()
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                case .quadruplex:
+                    QuadruplexView()
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                case .multiplex:
+                    MultiplexView()
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                }
             }
             .edgesIgnoringSafeArea(.all)
         }
     }
+}
+
+enum ViewType {
+    case surveillance, splitScreen, quadruplex, multiplex
 }
 
 struct CommandCenterView: View {

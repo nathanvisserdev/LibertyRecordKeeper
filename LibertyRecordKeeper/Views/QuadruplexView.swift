@@ -1,5 +1,5 @@
 //
-//  SurveillanceView.swift
+//  QuadruplexView.swift
 //  LibertyRecordKeeper
 //
 //  Created by Nathan Visser on 2025-12-17.
@@ -8,14 +8,14 @@
 import Foundation
 import SwiftUI
 
-struct SurveillanceView: View {
+struct QuadruplexView: View {
     var body: some View {
-        Text("Surveillance View")
+        Text("Quadruplex View")
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.blue)
+            .background(Color.orange)
     }
 }
 
 #Preview {
-    SurveillanceView()
+    QuadruplexView()
 }

@@ -1,5 +1,5 @@
 //
-//  SurveillanceView.swift
+//  SplitScreenView.swift
 //  LibertyRecordKeeper
 //
 //  Created by Nathan Visser on 2025-12-17.
@@ -8,14 +8,14 @@
 import Foundation
 import SwiftUI
 
-struct SurveillanceView: View {
+struct SplitScreenView: View {
     var body: some View {
-        Text("Surveillance View")
+        Text("Split Screen View")
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.blue)
+            .background(Color.green)
     }
 }
 
 #Preview {
-    SurveillanceView()
+    SplitScreenView()
 }

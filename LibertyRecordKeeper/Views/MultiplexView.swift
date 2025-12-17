@@ -1,5 +1,5 @@
 //
-//  SurveillanceView.swift
+//  MultiplexerView.swift
 //  LibertyRecordKeeper
 //
 //  Created by Nathan Visser on 2025-12-17.
@@ -8,14 +8,14 @@
 import Foundation
 import SwiftUI
 
-struct SurveillanceView: View {
+struct MultiplexView: View {
     var body: some View {
-        Text("Surveillance View")
+        Text("Multiplex View")
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.blue)
+            .background(Color.purple)
     }
 }
 
 #Preview {
-    SurveillanceView()
+    MultiplexView()
 }
