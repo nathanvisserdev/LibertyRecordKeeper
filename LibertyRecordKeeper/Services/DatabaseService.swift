@@ -35,11 +35,40 @@ class DatabaseService {
     
     // MARK: - Database Lifecycle
     
+    private func getSha256Sum(for fileURL: URL) throws -> String {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/shasum")
+        process.arguments = ["-a", "256", fileURL.path]
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+
+        try process.run()
+        process.waitUntilExit()
+
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        guard let output = String(data: data, encoding: .utf8)?.split(separator: " ").first else {
+            throw DatabaseError.integrityCheckFailed
+        }
+
+        return String(output)
+    }
+    
     func initializeDatabase(with key: SymmetricKey) throws {
         self.encryptionKey = key
         
         // Close any existing connection first
         if db != nil {
+            do {
+                let computedHash = try getSha256Sum(for: databaseURL)
+                if computedHash == forensic_records_db_sha_sum {
+                    print("Database hash matches the stored value.")
+                } else {
+                    print("Database hash does not match the stored value.")
+                }
+            } catch {
+                print("Failed to compute SHA-256 hash: \(error)")
+            }
             sqlite3_close(db)
             db = nil
         }
