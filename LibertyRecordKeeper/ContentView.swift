@@ -8,42 +8,33 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selectedTab = 0
-    
+    @State private var selectedVideo: VideoRecord? // State for selected video
+    @State private var leftPanelWidth: CGFloat = 300 // Initial width for the left panel
+
     var body: some View {
-        TabView(selection: $selectedTab) {
-            VideoView()
-                .tabItem {
-                    Label("Videos", systemImage: "video")
-                }
-                .tag(1)
+        GeometryReader { geometry in
+            HStack(spacing: 0) {
+                // Left side: Video list
+                VideoView(selectedVideo: $selectedVideo) // Pass binding to VideoView
+                    .frame(width: leftPanelWidth)
+                    .background(Color.gray.opacity(0.2))
+                    .gesture(
+                        DragGesture(minimumDistance: 10)
+                            .onChanged { value in
+                                let newWidth = leftPanelWidth + value.translation.width
+                                if newWidth > 150 && newWidth < geometry.size.width * 0.7 {
+                                    leftPanelWidth = newWidth
+                                }
+                            }
+                    )
 
-            AudioView()
-                .tabItem {
-                    Label("Audio", systemImage: "waveform")
-                }
-                .tag(3)
-
-            ScreenRecordingView()
-                .tabItem {
-                    Label("Screen Recordings", systemImage: "record.circle")
-                }
-                .tag(0)
-
-            PhotoView()
-                .tabItem {
-                    Label("Photos", systemImage: "photo")
-                }
-                .tag(2)
-
-            ScreenshotView()
-                .tabItem {
-                    Label("Screenshots", systemImage: "camera")
-                }
-                .tag(4)
+                // Right side: Media player
+                MediaPlayer(video: selectedVideo) // Pass selected video to MediaPlayer
+                    .frame(maxWidth: .infinity)
+                    .background(Color.black)
+            }
+            .edgesIgnoringSafeArea(.all)
         }
-        .background(Color.black) // Set background color to black
-        .frame(maxWidth: .infinity, maxHeight: .infinity) // Ensure full space is taken up
     }
 }
 

@@ -10,8 +10,8 @@ import AVKit
 
 struct VideoView: View {
     @StateObject private var viewModel = VideoViewModel()
-    @State private var selectedVideo: VideoRecord?
-    
+    @Binding var selectedVideo: VideoRecord? // Binding for selected video
+
     var body: some View {
         NavigationView {
             VStack {
@@ -27,11 +27,19 @@ struct VideoView: View {
                             Text("Created: \(video.createdAt)")
                                 .font(.subheadline)
                         }
+                        .onTapGesture {
+                            selectedVideo = VideoRecord(
+                                fileURL: video.fileURL,
+                                duration: video.duration,
+                                resolution: video.resolution,
+                                codec: "Unknown" // Placeholder for codec
+                            ) // Convert VideoModel to VideoRecord
+                        }
                     }
                 }
-                
+
                 Spacer()
-                
+
                 // Camera Controls
                 HStack(spacing: 20) {
                     Button(action: {
@@ -67,12 +75,6 @@ struct VideoView: View {
                 }
             } message: {
                 Text(viewModel.errorMessage ?? "")
-            }
-            .sheet(item: $selectedVideo) { video in
-                if let url = video.fileURL {
-                    VideoPlayer(player: AVPlayer(url: url))
-                        .navigationTitle("Video")
-                }
             }
         }
     }
