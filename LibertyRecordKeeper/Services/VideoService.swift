@@ -1,7 +1,7 @@
 import Foundation
 
 class VideoService {
-    func fetchVideos() async throws -> [MediaRecord] {
+    func fetchVideos() async throws -> [VideoRecord] {
         // Implement video fetching logic
         return []
     }

@@ -1,5 +1,5 @@
 //
-//  CommandCenterViewModel.swift
+//  CCVM.swift
 //  LibertyRecordKeeper
 //
 //  Created on 12/12/2025.
@@ -15,7 +15,7 @@ enum RecordingMode: String {
 }
 
 @MainActor
-class CommandCenterViewModel: ObservableObject {
+class CCVM: ObservableObject {
     @Published var mediaRecords: [MediaRecord] = []
     @Published var isRecording = false
     @Published var errorMessage: String?
