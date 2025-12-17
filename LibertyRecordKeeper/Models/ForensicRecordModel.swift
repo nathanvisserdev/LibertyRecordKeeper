@@ -187,8 +187,9 @@ struct VideoRecord: ForensicRecord {
     let duration: TimeInterval
     let resolution: String
     let frameRate: Double
+    let codec: String
 
-    init(fileURL: URL, duration: TimeInterval, resolution: String, frameRate: Double) {
+    init(fileURL: URL, duration: TimeInterval, resolution: String, frameRate: Double, codec: String) {
         self.id = UUID()
         self.createdAt = Date()
         self.modifiedAt = Date()
@@ -197,6 +198,7 @@ struct VideoRecord: ForensicRecord {
         self.duration = duration
         self.resolution = resolution
         self.frameRate = frameRate
+        self.codec = codec
         self.metadata = ForensicMetadata()
         self.chainOfCustody = [CustodyEvent(action: .created)]
 
