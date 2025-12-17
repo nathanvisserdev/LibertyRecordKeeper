@@ -8,8 +8,6 @@
 import Foundation
 import CryptoKit
 
-
-
 /// Forensic metadata for legal admissibility
 struct ForensicMetadata: Codable, Hashable {
     let captureDate: Date
@@ -319,6 +317,41 @@ struct ScreenRecordingRecord: ForensicRecord {
         self.chainOfCustody = [CustodyEvent(action: .created)]
 
         // Calculate file size and checksum
+        if let data = try? Data(contentsOf: fileURL) {
+            self.fileSize = Int64(data.count)
+            let hash = SHA256.hash(data: data)
+            self.checksumSHA256 = hash.compactMap { String(format: "%02x", $0) }.joined()
+        } else {
+            self.fileSize = 0
+            self.checksumSHA256 = ""
+        }
+    }
+}
+
+struct DocumentRecord: ForensicRecord {
+    let id: UUID
+    let createdAt: Date
+    var modifiedAt: Date
+    let deviceIdentifier: String
+    let checksumSHA256: String
+    let fileURL: URL?
+    let fileSize: Int64
+    let metadata: ForensicMetadata
+    var chainOfCustody: [CustodyEvent]
+    let documentType: String
+    let description: String
+
+    init(fileURL: URL, documentType: String, description: String) {
+        self.id = UUID()
+        self.createdAt = Date()
+        self.modifiedAt = Date()
+        self.deviceIdentifier = ForensicMetadata.getDeviceModel()
+        self.fileURL = fileURL
+        self.documentType = documentType
+        self.description = description
+        self.metadata = ForensicMetadata()
+        self.chainOfCustody = [CustodyEvent(action: .created)]
+
         if let data = try? Data(contentsOf: fileURL) {
             self.fileSize = Int64(data.count)
             let hash = SHA256.hash(data: data)
