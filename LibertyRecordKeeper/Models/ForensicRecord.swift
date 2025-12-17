@@ -123,3 +123,43 @@ class ForensicRecordModel: ForensicRecordDTO {
         chainOfCustody.append(event)
     }
 }
+
+/// Audio Record
+struct AudioRecord: ForensicRecord {
+    let id: UUID
+    let createdAt: Date
+    var modifiedAt: Date
+    let deviceIdentifier: String
+    let checksumSHA256: String
+    let fileURL: URL?
+    let fileSize: Int64
+    let metadata: ForensicMetadata
+    var chainOfCustody: [CustodyEvent]
+
+    let duration: TimeInterval
+    let format: String
+    let sampleRate: Double
+
+    init(fileURL: URL, duration: TimeInterval, format: String, sampleRate: Double) {
+        self.id = UUID()
+        self.createdAt = Date()
+        self.modifiedAt = Date()
+        self.deviceIdentifier = ForensicMetadata.getDeviceModel()
+        self.fileURL = fileURL
+        self.duration = duration
+        self.format = format
+        self.sampleRate = sampleRate
+        self.metadata = ForensicMetadata()
+        self.chainOfCustody = [CustodyEvent(action: .created)]
+
+        // Calculate file size and checksum
+        if let data = try? Data(contentsOf: fileURL) {
+            self.fileSize = Int64(data.count)
+            let hash = SHA256.hash(data: data)
+            self.checksumSHA256 = hash.compactMap { String(format: "%02x", $0) }.joined()
+        } else {
+            self.fileSize = 0
+            self.checksumSHA256 = ""
+        }
+    }
+}
