@@ -11,7 +11,7 @@ import CryptoKit
 // This file will be split into multiple files categorically under the ForensicRecord folder.
 
 /// Base protocol for all forensic records with chain of custody
-protocol ForensicRecordDTO: Identifiable, Codable {
+protocol ForensicRecord: Identifiable, Codable {
     var id: UUID { get }
     var createdAt: Date { get }
     var modifiedAt: Date { get }
