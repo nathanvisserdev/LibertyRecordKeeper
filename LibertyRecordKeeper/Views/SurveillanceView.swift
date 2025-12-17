@@ -12,7 +12,7 @@ struct SurveillanceView: View {
     var body: some View {
         GeometryReader { geometry in
             HStack(spacing: 0) {
-                ThirtyPercentOfSpaceView()
+                ClusterView()
                     .frame(width: geometry.size.width * 0.3)
 
                 LiveView()

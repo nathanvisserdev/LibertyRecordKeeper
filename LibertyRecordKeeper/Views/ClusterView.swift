@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct ThirtyPercentOfSpaceView: View {
+struct ClusterView: View {
     @State private var dragOffset: CGSize = .zero
 
     var body: some View {
@@ -42,5 +42,5 @@ struct ThirtyPercentOfSpaceView: View {
 }
 
 #Preview {
-    ThirtyPercentOfSpaceView()
+    ClusterView()
 }
