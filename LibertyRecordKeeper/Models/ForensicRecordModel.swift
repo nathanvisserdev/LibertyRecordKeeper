@@ -99,7 +99,17 @@ struct CustodyEvent: Codable, Identifiable, Hashable {
 }
 
 /// Represents a forensic record with stateful logic
-class ForensicRecordModel: ForensicRecordDTO {
+class ForensicRecordModel: ForensicRecord {
+    var id: UUID
+    var createdAt: Date
+    var modifiedAt: Date
+    var deviceIdentifier: String
+    var checksumSHA256: String
+    var fileURL: URL?
+    var fileSize: Int64
+    var metadata: ForensicMetadata
+    var chainOfCustody: [CustodyEvent]
+    
     // Removed duplicate property definitions; inheriting from ForensicRecordDTO ensures properties are defined only once.
     // Added stateful logic and functions specific to the model.
 
