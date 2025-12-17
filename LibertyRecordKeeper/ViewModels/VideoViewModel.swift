@@ -8,12 +8,19 @@
 import Foundation
 import Combine
 
+enum RecordingMode: String {
+    case video = "Video"
+    case screen = "Screen"
+    case audio = "Audio"
+}
+
 @MainActor
 class VideoViewModel: ObservableObject {
     @Published var videos: [VideoModel] = []
     @Published var isRecording = false
     @Published var errorMessage: String?
     @Published var isLoading = false
+    @Published var recordingMode: RecordingMode = .video // Default recording mode
     
     private let cameraService = CameraService.shared
     private let databaseService = DatabaseService.shared
@@ -53,6 +60,28 @@ class VideoViewModel: ObservableObject {
                     self.isLoading = false
                 }
             }
+        }
+    }
+    
+    func startRecording() {
+        switch recordingMode {
+        case .video:
+            startVideoRecording()
+        case .screen:
+            startScreenRecording()
+        case .audio:
+            startAudioRecording()
+        }
+    }
+
+    func stopRecording() {
+        switch recordingMode {
+        case .video:
+            stopVideoRecording()
+        case .screen:
+            stopScreenRecording()
+        case .audio:
+            stopAudioRecording()
         }
     }
     
@@ -109,6 +138,26 @@ class VideoViewModel: ObservableObject {
     func stopVideoRecording() {
         cameraService.stopVideoRecording()
         isRecording = false
+    }
+    
+    func startScreenRecording() {
+        isRecording = true
+        // Implement screen recording logic here
+        print("Screen recording started")
+    }
+
+    func stopScreenRecording() {
+        isRecording = false
+        // Implement screen recording stop logic here
+        print("Screen recording stopped")
+    }
+
+    func startAudioRecording() {
+        // Implement audio recording logic
+    }
+
+    func stopAudioRecording() {
+        // Implement audio recording stop logic
     }
     
     func checkAndRequestPermissions() async -> Bool {

@@ -41,29 +41,49 @@ struct VideoView: View {
                 Spacer()
 
                 // Camera Controls
-                HStack(spacing: 20) {
+                VStack(spacing: 10) {
                     Button(action: {
                         if viewModel.isRecording {
-                            viewModel.stopVideoRecording()
+                            viewModel.stopRecording()
                         } else {
                             Task {
                                 let hasPermission = await viewModel.checkAndRequestPermissions()
                                 if !hasPermission {
-                                    viewModel.errorMessage = "Camera permissions are required to use this feature."
+                                    viewModel.errorMessage = "Permissions are required to use this feature."
                                     return
                                 }
-                                viewModel.startVideoRecording()
+                                viewModel.startRecording()
+                                if viewModel.recordingMode == .screen {
+                                    viewModel.startScreenRecording()
+                                }
                             }
                         }
                     }) {
                         HStack {
-                            Image(systemName: viewModel.isRecording ? "stop.circle.fill" : "video.circle")
-                            Text(viewModel.isRecording ? "Stop Recording" : "Record Video")
+                            Image(systemName: viewModel.isRecording ? "stop.circle.fill" : "record.circle")
+                            Text(viewModel.isRecording ? "Stop Recording" : "Record \(viewModel.recordingMode.rawValue)")
                         }
                         .foregroundColor(viewModel.isRecording ? .red : .white)
                         .padding()
                         .background(viewModel.isRecording ? Color.red.opacity(0.2) : Color.blue)
                         .cornerRadius(10)
+                    }
+
+                    Menu {
+                        Button("Record Video") {
+                            viewModel.recordingMode = .video
+                        }
+                        Button("Record Screen") {
+                            viewModel.recordingMode = .screen
+                        }
+                        Button("Record Audio") {
+                            viewModel.recordingMode = .audio
+                        }
+                    } label: {
+                        Text("Select Recording Mode")
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(8)
                     }
                 }
                 .padding()
