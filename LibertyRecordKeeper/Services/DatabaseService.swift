@@ -224,6 +224,23 @@ class DatabaseService {
             );
         """)
         
+        // Document Records Table
+        try execute("""
+            CREATE TABLE IF NOT EXISTS document_records (
+                id TEXT PRIMARY KEY,
+                created_at REAL NOT NULL,
+                modified_at REAL NOT NULL,
+                device_identifier TEXT NOT NULL,
+                checksum_sha256 TEXT NOT NULL,
+                file_url TEXT,
+                file_size INTEGER NOT NULL,
+                metadata_json TEXT NOT NULL,
+                custody_json TEXT NOT NULL,
+                document_type TEXT NOT NULL,
+                description TEXT NOT NULL
+            );
+        """)
+        
         // Create indexes for better query performance
         try execute("CREATE INDEX IF NOT EXISTS idx_screen_recordings_created ON screen_recordings(created_at DESC);")
         try execute("CREATE INDEX IF NOT EXISTS idx_videos_created ON videos(created_at DESC);")
@@ -231,6 +248,7 @@ class DatabaseService {
         try execute("CREATE INDEX IF NOT EXISTS idx_audio_created ON audio_recordings(created_at DESC);")
         try execute("CREATE INDEX IF NOT EXISTS idx_screenshots_created ON screenshots(created_at DESC);")
         try execute("CREATE INDEX IF NOT EXISTS idx_chat_logs_created ON ai_chat_logs(created_at DESC);")
+        try execute("CREATE INDEX IF NOT EXISTS idx_document_records_created ON document_records(created_at DESC);")
     }
     
     private func execute(_ sql: String) throws {
@@ -354,9 +372,27 @@ class DatabaseService {
                let url = URL(string: String(cString: fileURLString)) {
                 let duration = sqlite3_column_double(statement, 9)
                 let resolution = String(cString: sqlite3_column_text(statement, 10))
+
+                guard let frameRateValue = sqlite3_column_text(statement, 11) else {
+                    let defaultFrameRate = 30.0 // Default value
+                    print("Warning: Frame rate not found in database. Using default value: \(defaultFrameRate)")
+                    let record = ScreenRecordingRecord(
+                        fileURL: url,
+                        duration: duration,
+                        resolution: resolution,
+                        frameRate: defaultFrameRate
+                    )
+                    records.append(record)
+                    continue
+                }
+
                 let frameRate = sqlite3_column_double(statement, 11)
-                
-                let record = ScreenRecordingRecord(fileURL: url, duration: duration, resolution: resolution, frameRate: frameRate)
+                let record = ScreenRecordingRecord(
+                    fileURL: url,
+                    duration: duration,
+                    resolution: resolution,
+                    frameRate: frameRate
+                )
                 records.append(record)
             }
         }
@@ -419,9 +455,16 @@ class DatabaseService {
                let url = URL(string: String(cString: fileURLString)) {
                 let duration = sqlite3_column_double(statement, 9)
                 let resolution = String(cString: sqlite3_column_text(statement, 10))
+                let frameRate = sqlite3_column_double(statement, 12)
                 let codec = String(cString: sqlite3_column_text(statement, 11))
                 
-                let record = VideoRecord(fileURL: url, duration: duration, resolution: resolution, codec: codec)
+                let record = VideoRecord(
+                    fileURL: url,
+                    duration: duration,
+                    resolution: resolution,
+                    frameRate: frameRate,
+                    codec: codec
+                )
                 records.append(record)
             }
         }
@@ -617,24 +660,24 @@ class DatabaseService {
         return records
     }
     
-    func saveAIChatLog(_ record: AIChatLogRecord) throws {
+    func saveDocumentRecord(_ record: DocumentRecord) throws {
         let metadataJSON = try JSONEncoder().encode(record.metadata)
         let custodyJSON = try JSONEncoder().encode(record.chainOfCustody)
-        
+
         let sql = """
-            INSERT INTO ai_chat_logs 
+            INSERT INTO document_records 
             (id, created_at, modified_at, device_identifier, checksum_sha256, file_url, file_size, 
-             metadata_json, custody_json, conversation_title, message_count)
+             metadata_json, custody_json, document_type, description)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         """
-        
+
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK else {
             throw DatabaseError.prepareFailed
         }
-        
+
         defer { sqlite3_finalize(statement) }
-        
+
         sqlite3_bind_text(statement, 1, record.id.uuidString, -1, nil)
         sqlite3_bind_double(statement, 2, record.createdAt.timeIntervalSince1970)
         sqlite3_bind_double(statement, 3, record.modifiedAt.timeIntervalSince1970)
@@ -644,16 +687,16 @@ class DatabaseService {
         sqlite3_bind_int64(statement, 7, record.fileSize)
         sqlite3_bind_text(statement, 8, String(data: metadataJSON, encoding: .utf8), -1, nil)
         sqlite3_bind_text(statement, 9, String(data: custodyJSON, encoding: .utf8), -1, nil)
-        sqlite3_bind_text(statement, 10, record.conversationTitle, -1, nil)
-        sqlite3_bind_int(statement, 11, Int32(record.messageCount))
-        
+        sqlite3_bind_text(statement, 10, record.documentType, -1, nil)
+        sqlite3_bind_text(statement, 11, record.description, -1, nil)
+
         guard sqlite3_step(statement) == SQLITE_DONE else {
             throw DatabaseError.executeFailed
         }
     }
     
-    func fetchAllAIChatLogs() throws -> [AIChatLogRecord] {
-        let sql = "SELECT * FROM ai_chat_logs ORDER BY created_at DESC;"
+    func fetchAllDocumentRecords() throws -> [DocumentRecord] {
+        let sql = "SELECT * FROM document_records ORDER BY created_at DESC;"
         var statement: OpaquePointer?
         
         guard sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK else {
@@ -662,15 +705,15 @@ class DatabaseService {
         
         defer { sqlite3_finalize(statement) }
         
-        var records: [AIChatLogRecord] = []
+        var records: [DocumentRecord] = []
         
         while sqlite3_step(statement) == SQLITE_ROW {
             if let fileURLString = sqlite3_column_text(statement, 5),
                let url = URL(string: String(cString: fileURLString)) {
-                let conversationTitle = String(cString: sqlite3_column_text(statement, 9))
-                let messageCount = Int(sqlite3_column_int(statement, 10))
+                let documentType = String(cString: sqlite3_column_text(statement, 10))
+                let description = String(cString: sqlite3_column_text(statement, 11))
                 
-                let record = AIChatLogRecord(fileURL: url, conversationTitle: conversationTitle, messageCount: messageCount)
+                let record = DocumentRecord(fileURL: url, documentType: documentType, description: description)
                 records.append(record)
             }
         }

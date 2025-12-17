@@ -199,31 +199,31 @@ class CloudKitService {
         }
     }
     
-    // MARK: - AI Chat Logs
+    // MARK: - Document Records
     
-    func uploadAIChatLog(_ record: AIChatLogRecord) async throws {
+    func uploadDocumentRecord(_ record: DocumentRecord) async throws {
         let recordID = CKRecord.ID(recordName: record.id.uuidString)
-        let ckRecord = CKRecord(recordType: "AIChatLog", recordID: recordID)
-        
+        let ckRecord = CKRecord(recordType: "DocumentRecord", recordID: recordID)
+
         ckRecord["createdAt"] = record.createdAt as CKRecordValue
         ckRecord["modifiedAt"] = record.modifiedAt as CKRecordValue
         ckRecord["deviceIdentifier"] = record.deviceIdentifier as CKRecordValue
         ckRecord["checksumSHA256"] = record.checksumSHA256 as CKRecordValue
         ckRecord["fileSize"] = record.fileSize as CKRecordValue
-        ckRecord["conversationTitle"] = record.conversationTitle as CKRecordValue
-        ckRecord["messageCount"] = record.messageCount as CKRecordValue
-        
+        ckRecord["documentType"] = record.documentType as CKRecordValue
+        ckRecord["description"] = record.description as CKRecordValue
+
         if let fileURL = record.fileURL {
             let asset = CKAsset(fileURL: fileURL)
             ckRecord["file"] = asset
         }
-        
+
         let metadataJSON = try JSONEncoder().encode(record.metadata)
         ckRecord["metadata"] = String(data: metadataJSON, encoding: .utf8) as CKRecordValue?
-        
+
         let custodyJSON = try JSONEncoder().encode(record.chainOfCustody)
         ckRecord["chainOfCustody"] = String(data: custodyJSON, encoding: .utf8) as CKRecordValue?
-        
+
         do {
             _ = try await privateDatabase.save(ckRecord)
         } catch {
