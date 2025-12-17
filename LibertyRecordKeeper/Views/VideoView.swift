@@ -36,7 +36,14 @@ struct VideoView: View {
                         if viewModel.isRecording {
                             viewModel.stopVideoRecording()
                         } else {
-                            viewModel.startVideoRecording()
+                            Task {
+                                let hasPermission = await viewModel.checkAndRequestPermissions()
+                                if !hasPermission {
+                                    viewModel.errorMessage = "Camera permissions are required to use this feature."
+                                    return
+                                }
+                                viewModel.startVideoRecording()
+                            }
                         }
                     }) {
                         HStack {
@@ -52,14 +59,6 @@ struct VideoView: View {
                 .padding()
             }
             .navigationTitle("Videos")
-            .onAppear {
-                Task {
-                    let hasPermission = await viewModel.checkAndRequestPermissions()
-                    if !hasPermission {
-                        viewModel.errorMessage = "Camera permissions are required to use this feature."
-                    }
-                }
-            }
             .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
                 Button("OK") {
                     viewModel.errorMessage = nil
