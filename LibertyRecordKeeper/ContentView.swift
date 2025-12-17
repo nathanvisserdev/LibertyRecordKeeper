@@ -38,6 +38,26 @@ struct ContentView: View {
     }
 }
 
+struct VideoView: View {
+    @Binding var selectedVideo: VideoRecord?
+
+    var body: some View {
+        VStack {
+            if let video = selectedVideo {
+                Text("Video: \(video.fileURL?.lastPathComponent ?? "Unknown")")
+                Text("Size: \(video.fileSize) bytes")
+                Text("Resolution: \(video.resolution)")
+                Text("Duration: \(video.duration) seconds")
+                Text("Frame Rate: \(video.frameRate) fps")
+                Text("Codec: \(video.codec)")
+            } else {
+                Text("No video selected")
+            }
+        }
+        .padding()
+    }
+}
+
 #Preview {
     ContentView()
 }

@@ -51,6 +51,27 @@ class CameraService: NSObject, ObservableObject {
         }
     }
     
+    func optimalFrameRate(for device: AVCaptureDevice) -> Double {
+        var optimalFrameRate: Double = 30.0 // Default frame rate
+
+        do {
+            let formats = device.formats
+            for format in formats {
+                let frameRateRanges = format.videoSupportedFrameRateRanges
+                for range in frameRateRanges {
+                    // Choose the highest max frame rate supported by the device
+                    if range.maxFrameRate > optimalFrameRate {
+                        optimalFrameRate = range.maxFrameRate
+                    }
+                }
+            }
+        } catch {
+            print("Error determining optimal frame rate: \(error)")
+        }
+
+        return optimalFrameRate
+    }
+    
     func setupCamera() async throws {
         guard await checkAuthorization() else {
             throw CameraError.notAuthorized
@@ -71,6 +92,17 @@ class CameraService: NSObject, ObservableObject {
         
         if session.canAddInput(videoInput) {
             session.addInput(videoInput)
+        }
+        
+        // Set optimal frame rate
+        let optimalRate = optimalFrameRate(for: camera)
+        do {
+            try camera.lockForConfiguration()
+            camera.activeVideoMinFrameDuration = CMTime(value: 1, timescale: CMTimeScale(optimalRate))
+            camera.activeVideoMaxFrameDuration = CMTime(value: 1, timescale: CMTimeScale(optimalRate))
+            camera.unlockForConfiguration()
+        } catch {
+            print("Failed to set optimal frame rate: \(error)")
         }
         
         // Setup audio input
@@ -182,7 +214,14 @@ extension CameraService: AVCaptureFileOutputRecordingDelegate {
             
             var resolution = "Unknown"
             var codec = "H.264"
-            
+            let frameRate: Double = await {
+                if let videoTrack = tracks.first,
+                   let nominalFrameRate = try? await videoTrack.load(.nominalFrameRate) { // Ensure 'await' is added
+                    return Double(nominalFrameRate)
+                }
+                return 30.0 // Default frame rate
+            }()
+
             if let videoTrack = tracks.first {
                 if let size = try? await videoTrack.load(.naturalSize) {
                     resolution = "\(Int(size.width))x\(Int(size.height))"
@@ -199,6 +238,7 @@ extension CameraService: AVCaptureFileOutputRecordingDelegate {
                 fileURL: outputFileURL,
                 duration: duration.seconds,
                 resolution: resolution,
+                frameRate: frameRate,
                 codec: codec
             )
             
