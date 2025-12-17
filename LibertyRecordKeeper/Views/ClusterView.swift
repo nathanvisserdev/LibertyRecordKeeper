@@ -13,12 +13,10 @@ struct ClusterView: View {
 
     var body: some View {
         ZStack {
-            // Underlying view
             Text("30% Space View")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.gray)
 
-            // Draggable ControlCenterView on top
             ControlCenterView(
                 controlCenterModel: ControlCenterModel(), // Directly initialize ControlCenterModel
                 selectedMedia: .constant(nil)
