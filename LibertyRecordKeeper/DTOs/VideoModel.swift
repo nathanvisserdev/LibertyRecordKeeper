@@ -1,5 +1,5 @@
 //
-//  CCModel.swift
+//  ControlCenterModel.swift
 //  LibertyRecordKeeper
 //
 //  Created on 12/17/2025.

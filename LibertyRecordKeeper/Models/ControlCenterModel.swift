@@ -1,14 +1,14 @@
 import Foundation
 
-class CCModel {
+class ControlCenterModel {
     private let videoService: VideoService
     private let screenRecordingService: ScreenRecordingService
     private let audioService: AudioRecordingService
 
-    init(videoService: VideoService, screenRecordingService: ScreenRecordingService, audioService: AudioRecordingService) {
-        self.videoService = videoService
-        self.screenRecordingService = screenRecordingService
-        self.audioService = audioService
+    init() {
+        self.videoService = VideoService()
+        self.screenRecordingService = ScreenRecordingService()
+        self.audioService = AudioRecordingService()
     }
 
     func fetchMedia() async throws -> [MediaRecord] {

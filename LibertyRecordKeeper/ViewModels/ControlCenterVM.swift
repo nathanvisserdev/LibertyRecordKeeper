@@ -1,5 +1,5 @@
 //
-//  CCVM.swift
+//  ControlCenterVM.swift
 //  LibertyRecordKeeper
 //
 //  Created on 12/12/2025.
@@ -15,17 +15,17 @@ enum RecordingMode: String {
 }
 
 @MainActor
-class CCVM: ObservableObject {
+class ControlCenterVM: ObservableObject {
     @Published var mediaRecords: [MediaRecord] = []
     @Published var isRecording = false
     @Published var errorMessage: String?
     @Published var isLoading = false
     @Published var recordingMode: RecordingMode = .video // Default recording mode
 
-    private let ccModel: CCModel
+    private let controlCenterModel: ControlCenterModel
 
-    init(ccModel: CCModel) {
-        self.ccModel = ccModel
+    init(controlCenterModel: ControlCenterModel) {
+        self.controlCenterModel = controlCenterModel
         loadMedia()
     }
 
@@ -33,7 +33,7 @@ class CCVM: ObservableObject {
         isLoading = true
         Task {
             do {
-                let records = try await ccModel.fetchMedia()
+                let records = try await controlCenterModel.fetchMedia()
                 await MainActor.run {
                     self.mediaRecords = records
                     self.isLoading = false
@@ -50,11 +50,11 @@ class CCVM: ObservableObject {
     func startRecording() {
         switch recordingMode {
         case .video:
-            ccModel.startVideoRecording()
+            controlCenterModel.startVideoRecording()
         case .screen:
-            ccModel.startScreenRecording()
+            controlCenterModel.startScreenRecording()
         case .audio:
-            ccModel.startAudioRecording()
+            controlCenterModel.startAudioRecording()
         }
         isRecording = true
     }
@@ -62,16 +62,16 @@ class CCVM: ObservableObject {
     func stopRecording() {
         switch recordingMode {
         case .video:
-            ccModel.stopVideoRecording()
+            controlCenterModel.stopVideoRecording()
         case .screen:
-            ccModel.stopScreenRecording()
+            controlCenterModel.stopScreenRecording()
         case .audio:
-            ccModel.stopAudioRecording()
+            controlCenterModel.stopAudioRecording()
         }
         isRecording = false
     }
 
     func checkAndRequestPermissions() async -> Bool {
-        return await ccModel.checkPermissions()
+        return await controlCenterModel.checkPermissions()
     }
 }

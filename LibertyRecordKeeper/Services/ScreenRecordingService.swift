@@ -33,7 +33,7 @@ class ScreenRecordingService: NSObject, ObservableObject {
     private var startTime: Date?
     private var outputURL: URL?
     
-    private override init() {
+    internal override init() {
         super.init()
         recorder = RPScreenRecorder.shared()
     }

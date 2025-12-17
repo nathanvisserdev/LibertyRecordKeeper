@@ -25,7 +25,7 @@ class AudioRecordingService: NSObject, ObservableObject {
     private var recordingTimer: Timer?
     private var startTime: Date?
     
-    private override init() {
+    internal override init() {
         super.init()
     }
     

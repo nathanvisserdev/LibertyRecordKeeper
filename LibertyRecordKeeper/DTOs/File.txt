@@ -1,1 +1,1 @@
-/Users/nathanvisser/Code/LibertyRecordKeeper/LibertyRecordKeeper/DTOs/VideoModel.swift:10:8 Invalid redeclaration of 'CCModel'
+/Users/nathanvisser/Code/LibertyRecordKeeper/LibertyRecordKeeper/DTOs/VideoModel.swift:10:8 Invalid redeclaration of 'ControlCenterModel'
