@@ -1,5 +1,5 @@
 //
-//  ForensicRecord.swift
+//  ForensicRecordModel.swift
 //  LibertyRecordKeeper
 //
 //  Created on 12/12/2025.
@@ -8,18 +8,7 @@
 import Foundation
 import CryptoKit
 
-/// Base protocol for all forensic records with chain of custody
-protocol ForensicRecord: Identifiable, Codable {
-    var id: UUID { get }
-    var createdAt: Date { get }
-    var modifiedAt: Date { get }
-    var deviceIdentifier: String { get }
-    var checksumSHA256: String { get }
-    var fileURL: URL? { get }
-    var fileSize: Int64 { get }
-    var metadata: ForensicMetadata { get }
-    var chainOfCustody: [CustodyEvent] { get set }
-}
+
 
 /// Forensic metadata for legal admissibility
 struct ForensicMetadata: Codable, Hashable {

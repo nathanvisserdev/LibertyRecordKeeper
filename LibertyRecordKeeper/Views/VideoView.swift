@@ -1,5 +1,5 @@
 //
-//  VideoView.swift
+//  CommandCenterView.swift
 //  LibertyRecordKeeper
 //
 //  Created on 12/12/2025.
@@ -8,39 +8,39 @@
 import SwiftUI
 import AVKit
 
-struct VideoView: View {
-    @StateObject private var viewModel = VideoViewModel()
-    @Binding var selectedVideo: VideoRecord? // Binding for selected video
+struct CommandCenterView: View {
+    @StateObject private var viewModel: CommandCenterViewModel
+    @Binding var selectedMedia: MediaRecord? // Binding for selected media
+
+    init(commandCenterModel: CommandCenterModel, selectedMedia: Binding<MediaRecord?>) {
+        _viewModel = StateObject(wrappedValue: CommandCenterViewModel(commandCenterModel: commandCenterModel))
+        _selectedMedia = selectedMedia
+    }
 
     var body: some View {
         NavigationView {
             VStack {
                 if viewModel.isLoading {
-                    ProgressView("Loading videos...")
+                    ProgressView("Loading media...")
                 } else {
-                    List(viewModel.videos) { video in
+                    List(viewModel.mediaRecords) { media in
                         VStack(alignment: .leading) {
-                            Text(video.fileURL.lastPathComponent)
+                            Text(media.fileURL.lastPathComponent)
                                 .font(.headline)
-                            Text("Size: \(video.fileSize) bytes")
+                            Text("Size: \(media.fileSize) bytes")
                                 .font(.subheadline)
-                            Text("Created: \(video.createdAt)")
+                            Text("Created: \(media.createdAt)")
                                 .font(.subheadline)
                         }
                         .onTapGesture {
-                            selectedVideo = VideoRecord(
-                                fileURL: video.fileURL,
-                                duration: video.duration,
-                                resolution: video.resolution,
-                                codec: "Unknown" // Placeholder for codec
-                            ) // Convert VideoModel to VideoRecord
+                            selectedMedia = media
                         }
                     }
                 }
 
                 Spacer()
 
-                // Camera Controls
+                // Command Controls
                 VStack(spacing: 10) {
                     Button(action: {
                         if viewModel.isRecording {
@@ -53,9 +53,6 @@ struct VideoView: View {
                                     return
                                 }
                                 viewModel.startRecording()
-                                if viewModel.recordingMode == .screen {
-                                    viewModel.startScreenRecording()
-                                }
                             }
                         }
                     }) {
@@ -88,7 +85,7 @@ struct VideoView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Videos")
+            .navigationTitle("Command Center")
             .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
                 Button("OK") {
                     viewModel.errorMessage = nil
@@ -100,31 +97,31 @@ struct VideoView: View {
     }
 }
 
-struct VideoRow: View {
-    let video: VideoRecord
+struct MediaRow: View {
+    let media: MediaRecord
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Image(systemName: "video.fill")
                     .foregroundColor(.green)
-                Text(formatDate(video.createdAt))
+                Text(formatDate(media.createdAt))
                     .font(.headline)
                 Spacer()
-                Text(formatDuration(video.duration))
+                Text(formatDuration(media.duration ?? 0))
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
             
             HStack {
-                Text("Resolution: \(video.resolution)")
+                Text("Resolution: \(media.resolution)")
                     .font(.caption)
                     .foregroundColor(.secondary)
-                Text("Codec: \(video.codec)")
+                Text("Codec: \(media.codec)")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 Spacer()
-                Text("Size: \(formatFileSize(video.fileSize))")
+                Text("Size: \(formatFileSize(media.fileSize))")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
