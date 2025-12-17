@@ -163,3 +163,43 @@ struct AudioRecord: ForensicRecord {
         }
     }
 }
+
+/// Video Record
+struct VideoRecord: ForensicRecord {
+    let id: UUID
+    let createdAt: Date
+    var modifiedAt: Date
+    let deviceIdentifier: String
+    let checksumSHA256: String
+    let fileURL: URL?
+    let fileSize: Int64
+    let metadata: ForensicMetadata
+    var chainOfCustody: [CustodyEvent]
+
+    let duration: TimeInterval
+    let resolution: String
+    let frameRate: Double
+
+    init(fileURL: URL, duration: TimeInterval, resolution: String, frameRate: Double) {
+        self.id = UUID()
+        self.createdAt = Date()
+        self.modifiedAt = Date()
+        self.deviceIdentifier = ForensicMetadata.getDeviceModel()
+        self.fileURL = fileURL
+        self.duration = duration
+        self.resolution = resolution
+        self.frameRate = frameRate
+        self.metadata = ForensicMetadata()
+        self.chainOfCustody = [CustodyEvent(action: .created)]
+
+        // Calculate file size and checksum
+        if let data = try? Data(contentsOf: fileURL) {
+            self.fileSize = Int64(data.count)
+            let hash = SHA256.hash(data: data)
+            self.checksumSHA256 = hash.compactMap { String(format: "%02x", $0) }.joined()
+        } else {
+            self.fileSize = 0
+            self.checksumSHA256 = ""
+        }
+    }
+}
