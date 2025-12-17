@@ -58,13 +58,13 @@ class DatabaseService {
         self.encryptionKey = key
         
         // Close any existing connection first
-        if db != nil {
+        if FileManager.default.fileExists(atPath: databaseURL.path) {
             do {
                 let computedHash = try getSha256Sum(for: databaseURL)
                 if computedHash == forensic_records_db_sha_sum {
-                    print("Database hash matches the stored value.")
+                    print("DB integrity verified.")
                 } else {
-                    print("Database hash does not match the stored value.")
+                    print("DB failed integrity verification.")
                 }
             } catch {
                 print("Failed to compute SHA-256 hash: \(error)")
