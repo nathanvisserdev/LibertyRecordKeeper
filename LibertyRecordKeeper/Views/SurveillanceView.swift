@@ -10,9 +10,15 @@ import SwiftUI
 
 struct SurveillanceView: View {
     var body: some View {
-        Text("Surveillance View")
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.blue)
+        GeometryReader { geometry in
+            HStack(spacing: 0) {
+                ThirtyPercentOfSpaceView()
+                    .frame(width: geometry.size.width * 0.3)
+
+                LiveView()
+                    .frame(width: geometry.size.width * 0.7)
+            }
+        }
     }
 }
 

@@ -6,3 +6,16 @@
 //
 
 import Foundation
+import SwiftUI
+
+struct ThirtyPercentOfSpaceView: View {
+    var body: some View {
+        Text("30% Space View")
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.gray)
+    }
+}
+
+#Preview {
+    ThirtyPercentOfSpaceView()
+}
