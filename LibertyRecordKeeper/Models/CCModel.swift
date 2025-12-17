@@ -1,6 +1,6 @@
 import Foundation
 
-class CommandCenterModel {
+class CCModel {
     private let videoService: VideoService
     private let screenRecordingService: ScreenRecordingService
     private let audioService: AudioRecordingService

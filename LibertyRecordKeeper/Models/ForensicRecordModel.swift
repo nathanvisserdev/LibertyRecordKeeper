@@ -172,7 +172,6 @@ struct AudioRecord: ForensicRecord {
     }
 }
 
-/// Video Record
 struct VideoRecord: ForensicRecord {
     let id: UUID
     let createdAt: Date

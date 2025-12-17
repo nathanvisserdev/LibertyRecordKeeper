@@ -8,7 +8,7 @@
 import Foundation
 
 class GetAllVideosService {
-    static func fetchAllVideos(from directory: String) throws -> [VideoModel] {
+    static func fetchAllVideos(from directory: String) throws -> [CCDTO] {
         let fileManager = FileManager.default
         let directoryURL = URL(fileURLWithPath: directory)
         
@@ -23,7 +23,7 @@ class GetAllVideosService {
             let fileSize = attributes?[.size] as? Int64 ?? 0
             let creationDate = attributes?[.creationDate] as? Date ?? Date()
             
-            return VideoModel(
+            return CCDTO (
                 id: UUID(),
                 createdAt: creationDate,
                 fileURL: fileURL,

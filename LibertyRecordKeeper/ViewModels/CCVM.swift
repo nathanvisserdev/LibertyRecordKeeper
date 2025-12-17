@@ -22,10 +22,10 @@ class CommandCenterViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var recordingMode: RecordingMode = .video // Default recording mode
 
-    private let commandCenterModel: CommandCenterModel
+    private let ccModel: CCModel
 
-    init(commandCenterModel: CommandCenterModel) {
-        self.commandCenterModel = commandCenterModel
+    init(ccModel: CCModel) {
+        self.ccModel = ccModel
         loadMedia()
     }
 
@@ -33,7 +33,7 @@ class CommandCenterViewModel: ObservableObject {
         isLoading = true
         Task {
             do {
-                let records = try await commandCenterModel.fetchMedia()
+                let records = try await ccModel.fetchMedia()
                 await MainActor.run {
                     self.mediaRecords = records
                     self.isLoading = false
@@ -50,11 +50,11 @@ class CommandCenterViewModel: ObservableObject {
     func startRecording() {
         switch recordingMode {
         case .video:
-            commandCenterModel.startVideoRecording()
+            ccModel.startVideoRecording()
         case .screen:
-            commandCenterModel.startScreenRecording()
+            ccModel.startScreenRecording()
         case .audio:
-            commandCenterModel.startAudioRecording()
+            ccModel.startAudioRecording()
         }
         isRecording = true
     }
@@ -62,16 +62,16 @@ class CommandCenterViewModel: ObservableObject {
     func stopRecording() {
         switch recordingMode {
         case .video:
-            commandCenterModel.stopVideoRecording()
+            ccModel.stopVideoRecording()
         case .screen:
-            commandCenterModel.stopScreenRecording()
+            ccModel.stopScreenRecording()
         case .audio:
-            commandCenterModel.stopAudioRecording()
+            ccModel.stopAudioRecording()
         }
         isRecording = false
     }
 
     func checkAndRequestPermissions() async -> Bool {
-        return await commandCenterModel.checkPermissions()
+        return await ccModel.checkPermissions()
     }
 }

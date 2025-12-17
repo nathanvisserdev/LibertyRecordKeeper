@@ -9,28 +9,18 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var selectedVideo: VideoRecord? // State for selected video
-    @State private var leftPanelWidth: CGFloat = 300 // Initial width for the left panel
 
     var body: some View {
         GeometryReader { geometry in
             HStack(spacing: 0) {
                 // Left side: Video list
-                VideoView(selectedVideo: $selectedVideo) // Pass binding to VideoView
-                    .frame(width: leftPanelWidth)
+                CommandCenterView(selectedVideo: $selectedVideo) // Pass binding to CommandCenterView
+                    .frame(width: geometry.size.width * 0.3) // 30% of the width
                     .background(Color.gray.opacity(0.2))
-                    .gesture(
-                        DragGesture(minimumDistance: 10)
-                            .onChanged { value in
-                                let newWidth = leftPanelWidth + value.translation.width
-                                if newWidth > 150 && newWidth < geometry.size.width * 0.7 {
-                                    leftPanelWidth = newWidth
-                                }
-                            }
-                    )
 
                 // Right side: Media player
                 MediaPlayer(video: selectedVideo) // Pass selected video to MediaPlayer
-                    .frame(maxWidth: .infinity)
+                    .frame(width: geometry.size.width * 0.7) // 70% of the width
                     .background(Color.black)
             }
             .edgesIgnoringSafeArea(.all)
@@ -38,7 +28,7 @@ struct ContentView: View {
     }
 }
 
-struct VideoView: View {
+struct CommandCenterView: View {
     @Binding var selectedVideo: VideoRecord?
 
     var body: some View {

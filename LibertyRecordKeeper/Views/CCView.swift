@@ -8,12 +8,14 @@
 import SwiftUI
 import AVKit
 
-struct CommandCenterView: View {
+struct CCView: View {
     @StateObject private var viewModel: CommandCenterViewModel
     @Binding var selectedMedia: MediaRecord? // Binding for selected media
 
-    init(commandCenterModel: CommandCenterModel, selectedMedia: Binding<MediaRecord?>) {
-        _viewModel = StateObject(wrappedValue: CommandCenterViewModel(commandCenterModel: commandCenterModel))
+    init(ccModel: CCModel,
+         selectedMedia: Binding<MediaRecord?>
+    ) {
+        _viewModel = StateObject(wrappedValue: CommandCenterViewModel(ccModel: ccModel))
         _selectedMedia = selectedMedia
     }
 
