@@ -13,10 +13,10 @@ struct SurveillanceView: View {
         GeometryReader { geometry in
             HStack(spacing: 0) {
                 ClusterView()
-                    .frame(width: geometry.size.width * 0.3)
+                    .frame(width: geometry.size.width * 0.32)
 
                 LiveView()
-                    .frame(width: geometry.size.width * 0.7)
+                    .frame(width: geometry.size.width * 0.68)
             }
         }
     }
