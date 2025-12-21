@@ -7,6 +7,7 @@
 
 import Foundation
 import CryptoKit
+import NetworkExtension
 
 /// Forensic metadata for legal admissibility
 struct ForensicMetadata: Codable, Hashable {
