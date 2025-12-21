@@ -10,7 +10,11 @@ import SwiftUI
 struct ContentView: View {
     @State private var selectedVideo: VideoRecord? // State for selected video
     @State private var selectedView: ViewType = .surveillance // Default view
-
+    @StateObject private var settingsViewModel = SettingsViewModel()
+    @StateObject private var securitySettingsViewModel = SecuritySettingsViewModel(twoFactorService: TwoFactorAuthService())
+#if os(macOS)
+    @State private var showSettings = false
+#endif
     var body: some View {
         VStack {
             // Menu for selecting views
@@ -21,6 +25,22 @@ struct ContentView: View {
                 Button("Multiplex View") { selectedView = .multiplex }
             }
             .padding()
+
+            // Settings navigation
+#if os(macOS)
+            Button("Settings") {
+                showSettings = true
+            }
+            .padding(.bottom)
+            .sheet(isPresented: $showSettings) {
+                SettingsView(viewModel: settingsViewModel, securitySettingsViewModel: securitySettingsViewModel)
+            }
+#else
+            NavigationLink(destination: SettingsView(viewModel: settingsViewModel, securitySettingsViewModel: securitySettingsViewModel)) {
+                Text("Settings")
+            }
+            .padding(.bottom)
+#endif
 
             // Display the selected view
             GeometryReader { geometry in
